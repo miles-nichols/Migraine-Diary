@@ -1,74 +1,90 @@
 <script>
-	import { goto } from '$app/navigation';
-	let isLogin = true;
-	let email = '';
-	let password = '';
-	let confirmPassword = '';
-	let error = '';
+  import { goto } from '$app/navigation';
+  let isLogin = true;
+  let username = '';
+  let password = '';
+  let confirmPassword = '';
+  let error = '';
+  let email = '';
 
-	function toggleMode() {
-		isLogin = !isLogin;
-		error = '';
-		email = '';
-		password = '';
-		confirmPassword = '';
-	}
+  function switchPage() {
+    isLogin = !isLogin;
+    error = '';
+    username = '';
+    password = '';
+    confirmPassword = '';
+    email = '';
+  }
 
-	async function handleSubmit() {
-		error = '';
-		if (!email || !password) {
-			error = 'Please fill in all fields.';
-			return;
-		}
-		if (!isLogin && password !== confirmPassword) {
-			error = 'Passwords do not match.';
-			return;
-		}
-		if (isLogin) {
-			try {
-				const res = await fetch('http://localhost:8080/login', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({ username: email, password })
-				});
-				if (res.ok) {
-					localStorage.setItem('loggedIn', 'true');
-					goto('/');
-				} else {
-					const msg = await res.text();
-					error = msg || 'Login failed.';
-				}
-			} catch (e) {
-				error = 'Network error.';
-			}
-		} else {
-			// Simulate signup (replace with real signup endpoint if available)
-			localStorage.setItem('loggedIn', 'true');
-			goto('/');
-		}
-	}
+  async function handleSubmit() {
+    error = '';
+    // Validate fields
+    if (!username || !password) {
+      error = 'Please fill in all fields.';
+      return;
+    }
+    if (!isLogin && password !== confirmPassword) {
+      error = 'Passwords do not match.';
+      return;
+    }
+    if (!isLogin && !email) {
+      error = 'Email is required for registration.';
+      return;
+    }
+
+        //USE PORT 8081
+		try {
+      const url = isLogin ? 'http://localhost:8081/user/login' : 'http://localhost:8081/user/register';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(isLogin ? {username, password} : {username, password, email}),
+      });
+
+      // Handle both JSON and text responses
+      let result;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        result = { message: await response.text() };
+      }
+
+      if (response.ok) {
+        goto('/'); // Redirect to home on success
+      } else {
+        error = result.message || 'Request failed';
+      }
+    } catch (err) {
+      console.error('Auth failed:', err);
+      error = 'An unexpected error occurred. Please try again.';
+    } 
+  }
 </script>
+
 <main>
 	<div class="container">
 		<h1>{isLogin ? 'Login' : 'Sign Up'}</h1>
 		<form on:submit|preventDefault={handleSubmit}>
-			<input type="email" placeholder="Email" bind:value={email} required />
+			<input type="text" placeholder="Username" bind:value={username} required />
 			<input type="password" placeholder="Password" bind:value={password} required />
 			{#if !isLogin}
 				<input type="password" placeholder="Confirm Password" bind:value={confirmPassword} required />
+				<input type="email" placeholder="Email" bind:value={email} required />
 			{/if}
 			{#if error}
 				<div class="error">{error}</div>
 			{/if}
 			<button type="submit" class="auth-btn">{isLogin ? 'Login' : 'Sign Up'}</button>
 		</form>
-		<button class="toggle-btn" on:click={toggleMode}>
+		<button class="toggle-btn" on:click={switchPage}>
 			{isLogin ? "Don't have an account? Sign Up" : "Already have an account? Login"}
 		</button>
 	</div>
 </main>
+
 <style>
 	main {
 		display: flex;
