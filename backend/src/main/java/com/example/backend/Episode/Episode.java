@@ -1,89 +1,145 @@
 package com.example.backend.Episode;
 
 import java.time.LocalDate;
-
-import jakarta.persistence.Column;
 import jakarta.persistence.*;
+import java.util.*;
+
+import com.example.backend.MedicineDailyLog.MedicineDailyLog;
 
 @Entity
 @Table(name = "episodes")
 public class Episode {
-
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "episode_id")    
-    private int episode_id;
+    private int episodeId;
 
-    @Column(name = "user_id")
-    private int user_id;
+    @Column(name = "username")  
+    private String username;       
 
     @Column(name = "episode_date")
-    private LocalDate episode_date;
+    private LocalDate episodeDate;
 
-    @Column(name = "trigger_ids")
-    private int[] trigger_ids;
+    @ElementCollection
+    @CollectionTable(name = "episode_trigger_ids", joinColumns = @JoinColumn(name = "episode_id"))
+    @Column(name = "trigger_id")
+    private List<Integer> triggerIds;
 
     @Column(name = "menstrual_period")
-    private boolean menstrual_period;
+    private boolean menstrualPeriod;
 
     @Column(name = "morning_severity")
-    private int morning_severity;
+    private int morningSeverity;
 
     @Column(name = "afternoon_severity")
-    private int afternoon_severity;
+    private int afternoonSeverity;
 
     @Column(name = "evening_severity")
-    private int evening_severity;
+    private int eveningSeverity;
 
     @Column(name = "notes")
     private String notes;
 
-    public Episode(int episode_id, int user_id, LocalDate episode_date, int[] trigger_ids, boolean menstrual_period,
-                   int morning_severity, int afternoon_severity, int evening_severity, String notes) {
-        this.episode_id = episode_id;
-        this.user_id = user_id;
-        this.episode_date = episode_date;
-        this.trigger_ids = trigger_ids;
-        this.menstrual_period = menstrual_period;
-        this.morning_severity = morning_severity;
-        this.afternoon_severity = afternoon_severity;
-        this.evening_severity = evening_severity;
+        @OneToMany(mappedBy = "episode", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MedicineDailyLog> medicines;
+
+    // No-argument constructor REQUIRED by JPA
+    public Episode() {
+    }
+
+    // All-argument constructor
+    public Episode(int episodeId, String username, LocalDate episodeDate, List<Integer> triggerIds, boolean menstrualPeriod,
+                   int morningSeverity, int afternoonSeverity, int eveningSeverity, String notes) {
+        this.episodeId = episodeId;
+        this.username = username;
+        this.episodeDate = episodeDate;
+        this.triggerIds = triggerIds;
+        this.menstrualPeriod = menstrualPeriod;
+        this.morningSeverity = morningSeverity;
+        this.afternoonSeverity = afternoonSeverity;
+        this.eveningSeverity = eveningSeverity;
         this.notes = notes;
     }
 
+    // Getter and Setter methods
     public int getEpisodeId() {
-        return episode_id;
+        return episodeId;
     }
 
-    public int getUserId() {
-        return user_id;
+    public void setEpisodeId(int episodeId) {
+        this.episodeId = episodeId;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public LocalDate getEpisodeDate() {
-        return episode_date;
+        return episodeDate;
     }
 
-    public int[] getTriggerIds() {
-        return trigger_ids;
+    public void setEpisodeDate(LocalDate episodeDate) {
+        this.episodeDate = episodeDate;
+    }
+
+    public List<Integer> getTriggerIds() {
+        return triggerIds;
+    }
+
+    public void setTriggerIds(List<Integer> triggerIds) {
+        this.triggerIds = triggerIds;
     }
 
     public boolean isMenstrualPeriod() {
-        return menstrual_period;
+        return menstrualPeriod;
+    }
+
+    public void setMenstrualPeriod(boolean menstrualPeriod) {
+        this.menstrualPeriod = menstrualPeriod;
     }
 
     public int getMorningSeverity() {
-        return morning_severity;
+        return morningSeverity;
+    }
+
+    public void setMorningSeverity(int morningSeverity) {
+        this.morningSeverity = morningSeverity;
     }
 
     public int getAfternoonSeverity() {
-        return afternoon_severity;
+        return afternoonSeverity;
+    }
+
+    public void setAfternoonSeverity(int afternoonSeverity) {
+        this.afternoonSeverity = afternoonSeverity;
     }
 
     public int getEveningSeverity() {
-        return evening_severity;
+        return eveningSeverity;
+    }
+
+    public void setEveningSeverity(int eveningSeverity) {
+        this.eveningSeverity = eveningSeverity;
     }
 
     public String getNotes() {
         return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+     public List<MedicineDailyLog> getMedicines() {
+        return medicines;
+    }
+
+    public void setMedicines(List<MedicineDailyLog> medicines) {
+        this.medicines = medicines;
     }
 }

@@ -134,67 +134,65 @@
     success = false;
 
     try {
-      const migraineResponse = await fetch('/api/migraine-logs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          date: formData.date,
-          morningSeverity: formData.morningSeverity,
-          afternoonSeverity: formData.afternoonSeverity,
-          eveningSeverity: formData.eveningSeverity,
-          triggerIds: formData.triggers,
-          menstrualPeriod: formData.menstrualPeriod,
-          notes: formData.notes
-        })
-      });
+        const payload = {
+            // Your form data payload
+            date: formData.date,
+            morningSeverity: formData.morningSeverity,
+            afternoonSeverity: formData.afternoonSeverity,
+            eveningSeverity: formData.eveningSeverity,
+            triggers: formData.triggers, // Or triggerIds, depending on backend field name
+            menstrualPeriod: formData.menstrualPeriod,
+            notes: formData.notes,
+            medicines: formData.medicines.map(med => ({
+                name: med.name,
+                dose: med.dose,
+                relief: med.relief,
+                time: med.time,
+                notes: med.notes
+            }))
+        };
 
-      const migraineResult = await migraineResponse.json();
+        const url = '/episodes/log';
+        console.log('Sending POST request to:', url);
+        console.log('Request Body:', payload);
 
-      if (!migraineResponse.ok) {
-        throw new Error(migraineResult.message || 'Failed to save migraine log');
-      }
-
-      const medicinePromises = formData.medicines.map(medicine => {
-        if (medicine.name && medicine.dose) {
-          return fetch('/api/medicine-logs', {
+        // This is the correct fetch call.
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-              episodeId: migraineResult.episode_id,
-              date: formData.date,
-              medicineName: medicine.name,
-              dose: medicine.dose,
-              relief: medicine.relief,
-              timeTaken: medicine.time,
-              notes: medicine.notes || ''
-            })
-          });
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}`);
         }
-        return Promise.resolve();
-      });
 
-      await Promise.all(medicinePromises);
-
-      success = true;
-      // After a successful submission, clear the saved data from localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem(localStorageKey);
-      }
-      
-      // Reset form to its default state
-      formData = defaultFormData;
-      
+        success = true;
+        // After a successful submission, clear the saved data from localStorage
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(localStorageKey);
+        }
+        
+        // Reset form to its default state
+        formData = defaultFormData;
+        
     } catch (err: unknown) {
-      error = (err as Error).message;
-      console.error('Submission error:', err);
+        // Better error handling
+        if (err instanceof Error) {
+            error = err.message;
+        } else if (typeof err === 'string') {
+            error = err;
+        } else {
+            error = 'An unknown error occurred';
+        }
+        console.error('Submission error:', err);
     } finally {
-      isLoading = false;
+        isLoading = false;
     }
-  }
+}
 </script>
 
 <main>

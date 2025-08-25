@@ -9,24 +9,17 @@ public class User {
     @Id
     @Column(name = "username")
     private String username;
-
-    @Column(name = "password_hash", nullable = false) // Map to correct column
+    @Column(name = "password_hash", nullable = false)
     private String password;
-
     @Column(nullable = false)
     private String email;
-
-    // Add all other columns from your table
     @Column(name = "user_id", insertable = false, updatable = false)
     private Integer userId;
-
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
-
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
 
-    // Constructors
     public User() { }
 
     public User(String username, String password, String email) {
