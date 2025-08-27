@@ -3,7 +3,7 @@ package com.example.backend.MedicineDailyLog;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import com.example.backend.Episode.*;
-import com.example.backend.Users.*;
+// import com.example.backend.Users.*;
 
 @Entity
 @Table(name = "medicine_daily_log")
@@ -19,11 +19,8 @@ public class MedicineDailyLog {
     @JoinColumn(name = "episode_id", nullable = false)
     private Episode episode;
 
-    // Use @ManyToOne to map the user_id foreign key
-    // You must have a User entity for this to work
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user; // <-- You need to create this class if it doesn't exist
+    @Column(name = "username")  
+    private String username; 
 
     @Column(name = "medicine_log_date")
     private LocalDateTime medicineLogDate;
@@ -51,12 +48,12 @@ public class MedicineDailyLog {
 
     public MedicineDailyLog() {}
 
-    public MedicineDailyLog(Long id, Episode episode, User user, LocalDateTime medicineLogDate, String medicineName,
+    public MedicineDailyLog(Long id, Episode episode, String username, LocalDateTime medicineLogDate, String medicineName,
                            String dose, Integer relief, String timeTaken, String notes,
                            LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.episode = episode;
-        this.user = user;
+        this.username = username;
         this.medicineLogDate = medicineLogDate;
         this.medicineName = medicineName;
         this.dose = dose;
@@ -84,12 +81,12 @@ public class MedicineDailyLog {
         this.episode = episode;
     }
 
-    public User getUser() {
-        return user;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public LocalDateTime getMedicineLogDate() {

@@ -41,7 +41,7 @@ public class Episode {
     @Column(name = "notes")
     private String notes;
 
-        @OneToMany(mappedBy = "episode", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "episode", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MedicineDailyLog> medicines;
 
     // No-argument constructor REQUIRED by JPA

@@ -1,10 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  
-  // Define a key for your localStorage item
-  const localStorageKey = 'migraineFormData';
 
-  // Define interfaces for better type safety
+  // --- 1. Type Definitions & Initial State ---
   interface Medicine {
     name: string;
     dose: string;
@@ -24,7 +21,8 @@
     medicines: Medicine[];
   }
 
-  // Your default form state
+  const localStorageKey = 'migraineFormData';
+
   const defaultFormData: FormData = {
     date: new Date().toISOString().split('T')[0],
     morningSeverity: null,
@@ -33,19 +31,11 @@
     triggers: [],
     menstrualPeriod: false,
     notes: '',
-    medicines: [{
-      name: '',
-      dose: '',
-      relief: null,
-      time: '',
-      notes: ''
-    }]
+    medicines: [{ name: '', dose: '', relief: null, time: '', notes: '' }]
   };
 
   // Helper function to safely get and parse data from localStorage
   function getStoredFormData(): FormData | null {
-    // This check is crucial for server-side rendering (SSR) environments like SvelteKit
-    // where `localStorage` is not available.
     if (typeof window !== 'undefined') {
       const savedData = localStorage.getItem(localStorageKey);
       if (savedData) {
@@ -60,71 +50,62 @@
     return null;
   }
 
-  // Use the helper function to initialize formData
-  // It will either load from localStorage or use the default state
   let formData: FormData = getStoredFormData() || defaultFormData;
-  
-  // Svelte's reactive statement. It runs whenever 'formData' changes.
-  // This will automatically save the form's state to localStorage as the user types.
+
+  // Svelte reactive statement to automatically save to localStorage
   $: if (typeof window !== 'undefined') {
     localStorage.setItem(localStorageKey, JSON.stringify(formData));
   }
-
-  // ... (the rest of your original code remains the same)
-  let title = "Log Your Migraine Day";
-
-  const triggerOptions = [
- { id: 1, name: 'Menses (period)'},
- { id: 2, name: 'Ovulation' },
- { id: 3, name: 'Hormone replacement therapy' },
- { id: 4, name: 'Oral contraceptives' },
- { id: 5, name: 'Alcohol' },
- { id: 6, name: 'Chocolate' },
- { id: 7, name: 'Aged cheeses' },
- { id: 8, name: 'Monosodium glutamate (MSG)' },
- { id: 9, name: 'Artificial sweeteners' },
- { id: 10, name: 'Caffeine' },
- { id: 11, name: 'Nuts' },
- { id: 12, name: 'Nitrates/Nitrites' },
- { id: 13, name: 'Citrus fruits' },
- { id: 14, name: 'Other dietary' },
- { id: 15, name: 'Weather' },
- { id: 16, name: 'Seasons' },
- { id: 17, name: 'Travel' },
- { id: 18, name: 'Altitude' },
- { id: 19, name: 'Schedule change' },
- { id: 20, name: 'Sleeping patterns' },
- { id: 21, name: 'Diet change' },
- { id: 22, name: 'Skipping meals' },
- { id: 23, name: 'Strong light' },
- { id: 24, name: 'Flickering light' },
- { id: 25, name: 'Odors' },
- { id: 26, name: 'Let-down periods' },
- { id: 27, name: 'Times of intense activity' },
- { id: 28, name: 'Loss' },
- { id: 29, name: 'Relationship difficulties' },
- { id: 30, name: 'Job stress' },
- { id: 31, name: 'Crisis' },
- { id: 32, name: 'Other' }
-];
-
+  
+  // --- 2. Form Logic & Data ---
   let isLoading = false;
   let error: unknown | null;
   let success = false;
+  let title = "Log Your Migraine Day";
+
+  const triggerOptions = [
+    { id: 1, name: 'Menses (period)'},
+    { id: 2, name: 'Ovulation' },
+    { id: 3, name: 'Hormone replacement therapy' },
+    { id: 4, name: 'Oral contraceptives' },
+    { id: 5, name: 'Alcohol' },
+    { id: 6, name: 'Chocolate' },
+    { id: 7, name: 'Aged cheeses' },
+    { id: 8, name: 'Monosodium glutamate (MSG)' },
+    { id: 9, name: 'Artificial sweeteners' },
+    { id: 10, name: 'Caffeine' },
+    { id: 11, name: 'Nuts' },
+    { id: 12, name: 'Nitrates/Nitrites' },
+    { id: 13, name: 'Citrus fruits' },
+    { id: 14, name: 'Other dietary' },
+    { id: 15, name: 'Weather' },
+    { id: 16, name: 'Seasons' },
+    { id: 17, name: 'Travel' },
+    { id: 18, name: 'Altitude' },
+    { id: 19, name: 'Schedule change' },
+    { id: 20, name: 'Sleeping patterns' },
+    { id: 21, name: 'Diet change' },
+    { id: 22, name: 'Skipping meals' },
+    { id: 23, name: 'Strong light' },
+    { id: 24, name: 'Flickering light' },
+    { id: 25, name: 'Odors' },
+    { id: 26, name: 'Let-down periods' },
+    { id: 27, name: 'Times of intense activity' },
+    { id: 28, name: 'Loss' },
+    { id: 29, name: 'Relationship difficulties' },
+    { id: 30, name: 'Job stress' },
+    { id: 31, name: 'Crisis' },
+    { id: 32, name: 'Other' }
+  ];
 
   function addMedicine() {
-    formData.medicines.push({
-      name: '',
-      dose: '',
-      relief: null,
-      time: '',
-      notes: ''
-    });
+    formData.medicines = [...formData.medicines, { name: '', dose: '', relief: null, time: '', notes: '' }];
   }
 
   function removeMedicine(index: number) {
     if (formData.medicines.length > 1) {
       formData.medicines.splice(index, 1);
+      formData.medicines = formData.medicines; // Trick Svelte into updating reactivity
     }
   }
 
@@ -133,66 +114,70 @@
     error = null;
     success = false;
 
-    try {
-        const payload = {
-            // Your form data payload
-            date: formData.date,
-            morningSeverity: formData.morningSeverity,
-            afternoonSeverity: formData.afternoonSeverity,
-            eveningSeverity: formData.eveningSeverity,
-            triggers: formData.triggers, // Or triggerIds, depending on backend field name
-            menstrualPeriod: formData.menstrualPeriod,
-            notes: formData.notes,
-            medicines: formData.medicines.map(med => ({
-                name: med.name,
-                dose: med.dose,
-                relief: med.relief,
-                time: med.time,
-                notes: med.notes
-            }))
-        };
-
-        const url = '/episodes/log';
-        console.log('Sending POST request to:', url);
-        console.log('Request Body:', payload);
-
-        // This is the correct fetch call.
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}`);
-        }
-
-        success = true;
-        // After a successful submission, clear the saved data from localStorage
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem(localStorageKey);
-        }
-        
-        // Reset form to its default state
-        formData = defaultFormData;
-        
-    } catch (err: unknown) {
-        // Better error handling
-        if (err instanceof Error) {
-            error = err.message;
-        } else if (typeof err === 'string') {
-            error = err;
-        } else {
-            error = 'An unknown error occurred';
-        }
-        console.error('Submission error:', err);
-    } finally {
-        isLoading = false;
+    const username = localStorage.getItem('username');
+    if (!username) {
+      error = "Username not found. Please log in.";
+      isLoading = false;
+      return;
     }
-}
+
+    try {
+      const payload = {
+        username: username,
+        episodeDate: formData.date,
+        morningSeverity: formData.morningSeverity,
+        afternoonSeverity: formData.afternoonSeverity,
+        eveningSeverity: formData.eveningSeverity,
+        triggerIds: formData.triggers, 
+        menstrualPeriod: formData.menstrualPeriod,
+        notes: formData.notes,
+        medicines: formData.medicines.map(med => ({
+          medicineName: med.name,
+          dose: med.dose,
+          relief: med.relief,
+          timeTaken: med.time,
+          notes: med.notes
+        }))
+      };
+
+      const url = '/episodes/log';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+
+      success = true;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem(localStorageKey);
+      }
+      
+      formData = { ...defaultFormData }; // Reset form and trigger reactivity
+      
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        error = err.message;
+      } else if (typeof err === 'string') {
+        error = err;
+      } else {
+        error = 'An unknown error occurred';
+      }
+      console.error('Submission error:', err);
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Handle success state and allow logging another day
+  function handleReset() {
+    success = false;
+    formData = getStoredFormData() || defaultFormData;
+  }
 </script>
 
 <main>
@@ -202,17 +187,16 @@
     {#if success}
       <div class="success-message">
         <p>Your migraine day has been successfully logged!</p>
-        <button on:click={() => success = false}>Log Another Day</button>
+        <button on:click={handleReset}>Log Another Day</button>
       </div>
     {:else}
       <form on:submit|preventDefault={submitForm}>
-        <!-- Date Selection -->
+        
         <div class="form-group">
-          <label for="date">Date:</label>
+          <label for="date">Date</label>
           <input type="date" id="date" bind:value={formData.date} required>
         </div>
         
-        <!-- Severity Section -->
         <div class="form-section">
           <h3>Migraine Severity</h3>
           <div class="severity-grid">
@@ -246,35 +230,32 @@
           </div>
         </div>
         
-        <!-- Triggers Section -->
         <div class="form-section">
           <h3>Potential Triggers</h3>
           <div class="trigger-grid">
             {#each triggerOptions as trigger}
-              <label>
+              <label class="trigger-label">
                 <input 
                   type="checkbox" 
                   bind:group={formData.triggers} 
                   value={trigger.id}
                 >
-                {trigger.name}
+                <span>{trigger.name}</span>
               </label>
             {/each}
           </div>
         </div>
         
-        <!-- Menstrual Period -->
-        <div class="form-group">
-          <label>
+        <div class="form-section">
+          <label class="checkbox-label">
             <input 
               type="checkbox" 
               bind:checked={formData.menstrualPeriod}
             >
-            Menstrual Period (for women)
+            Menstrual Period
           </label>
         </div>
         
-        <!-- Medicines Section -->
         <div class="form-section">
           <h3>Medicines Taken</h3>
           {#each formData.medicines as medicine, index}
@@ -325,9 +306,8 @@
           </button>
         </div>
         
-        <!-- Notes Section -->
-        <div class="form-group">
-          <label for="notes">Additional Notes:</label>
+        <div class="form-section">
+          <h3>Additional Notes</h3>
           <textarea 
             id="notes" 
             bind:value={formData.notes}
@@ -335,9 +315,12 @@
           ></textarea>
         </div>
         
-        <!-- Submit Button -->
         <button type="submit" disabled={isLoading} class="submit-btn">
-          {isLoading ? 'Saving...' : 'Save Migraine Day'}
+          {#if isLoading}
+            Saving...
+          {:else}
+            Save Migraine Day
+          {/if}
         </button>
         
         {#if error}
@@ -355,45 +338,62 @@
     align-items: flex-start;
     min-height: 100vh;
     padding: 2rem 0;
-    background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+    background: linear-gradient(135deg, #f0f4f8 0%, #e8ecf4 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   }
   
   .container {
     background: #fff;
-    padding: 2rem;
-    border-radius: 1rem;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     width: 100%;
-    max-width: 800px;
+    max-width: 700px;
+    border: 1px solid #e2e8f0;
   }
   
   h1 {
-    color: #3b82f6;
-    font-size: 2em;
-    margin-bottom: 1em;
+    color: #435b89;
+    font-size: 2.2em;
+    font-weight: 700;
+    margin-bottom: 0.5em;
     text-align: center;
   }
   
   h3 {
-    color: #6366f1;
+    color: #4a638a;
+    font-size: 1.25em;
+    font-weight: 600;
     margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
   }
   
   .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
   }
   
   .form-section {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
-    border-bottom: 1px solid #e0e7ff;
+    border-bottom: 1px solid #e2e8f0;
   }
   
   label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #4b5563;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  input[type="checkbox"] {
+    width: auto;
+    accent-color: #60a5fa;
   }
   
   input[type="text"],
@@ -402,50 +402,69 @@
   select,
   textarea {
     width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #e0e7ff;
-    border-radius: 0.5rem;
+    padding: 0.85rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.75rem;
     font-size: 1rem;
-    margin-bottom: 1rem;
+    color: #1e293b;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
   }
   
   textarea {
-    min-height: 100px;
+    min-height: 120px;
     resize: vertical;
   }
-  
+
+  /* Severity & Trigger Grids */
   .severity-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    gap: 1.5rem;
   }
   
   .trigger-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
   
-  .trigger-grid label {
+  .trigger-label {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem;
-    background: #f8fafc;
-    border-radius: 0.25rem;
-  }
-  
-  .medicine-entry {
-    margin-bottom: 1rem;
-    padding: 1rem;
+    padding: 0.75rem;
     background: #f8fafc;
     border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 400;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+
+  .trigger-label:hover {
+    background: #eff6ff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  }
+
+  /* Medicine Section */
+  .medicine-entry {
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 1rem;
+    border: 1px solid #e2e8f0;
   }
   
   .medicine-row {
     display: flex;
     gap: 1rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    align-items: center;
   }
   
   .medicine-row input {
@@ -461,87 +480,129 @@
   .relief-row select {
     width: auto;
   }
-  
+
+  /* Buttons */
   .add-btn, .submit-btn {
-    background: #6366f1;
+    background: #60a5fa;
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    cursor: pointer;
+    padding: 1rem;
+    border-radius: 0.75rem;
     font-size: 1rem;
-    transition: background 0.2s;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+    width: 100%;
   }
-  
+
   .add-btn {
-    background: #e0e7ff;
-    color: #6366f1;
-    width: 100%;
+    background: #eff6ff;
+    color: #3b82f6;
+    border: 1px solid #dbeafe;
+    padding: 0.75rem 1.5rem;
+    margin-top: 0.5rem;
   }
-  
+
+  .add-btn:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+  }
+
   .submit-btn {
-    width: 100%;
-    margin-top: 1rem;
-    background: linear-gradient(90deg, #6366f1 0%, #3b82f6 100%);
+    margin-top: 2rem;
+    background: linear-gradient(90deg, #4c77c6 0%, #60a5fa 100%);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   }
   
   .submit-btn:hover {
-    background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
   }
   
   .submit-btn:disabled {
-    background: #cbd5e1;
+    background: #d1d5db;
+    color: #9ca3af;
     cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
   }
   
   .remove-btn {
     background: none;
     border: none;
     color: #ef4444;
-    font-size: 1.5rem;
+    font-size: 2rem;
+    font-weight: 300;
     cursor: pointer;
     padding: 0 0.5rem;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.2s;
   }
   
+  .remove-btn:hover {
+    opacity: 1;
+  }
+  
+  /* Messages */
   .error-message {
     color: #ef4444;
-    margin-top: 1rem;
-    padding: 0.5rem;
-    background: #fee2e2;
-    border-radius: 0.25rem;
+    background: #fecaca;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-top: 1.5rem;
+    font-weight: 500;
+    text-align: center;
   }
   
   .success-message {
     text-align: center;
-    padding: 2rem;
+    padding: 3rem 1rem;
   }
   
   .success-message p {
     color: #10b981;
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
   }
   
   .success-message button {
-    background: #3b82f6;
+    background: #22c55e;
     color: white;
     border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
+    padding: 0.75rem 2rem;
+    border-radius: 0.75rem;
     cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
   }
   
+  .success-message button:hover {
+    background: #16a34a;
+  }
+  
+  /* Media Queries for Responsiveness */
   @media (max-width: 768px) {
-    .severity-grid {
-      grid-template-columns: 1fr;
+    .container {
+      padding: 1.5rem;
+      border-radius: 1rem;
     }
-    
-    .trigger-grid {
+
+    h1 {
+      font-size: 1.8em;
+    }
+
+    .severity-grid, .trigger-grid {
       grid-template-columns: 1fr;
     }
     
     .medicine-row {
       flex-direction: column;
+      gap: 0.75rem;
+    }
+    .medicine-entry {
+      padding: 1rem;
     }
   }
 </style>

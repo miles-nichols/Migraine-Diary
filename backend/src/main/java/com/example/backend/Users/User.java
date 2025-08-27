@@ -7,14 +7,15 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 public class User {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) //auto-increment
+    @Column(name = "user_id", insertable = false, updatable = false)
+    private Integer userId;
     @Column(name = "username")
     private String username;
     @Column(name = "password_hash", nullable = false)
     private String password;
     @Column(nullable = false)
     private String email;
-    @Column(name = "user_id", insertable = false, updatable = false)
-    private Integer userId;
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
     @Column(name = "last_login")
