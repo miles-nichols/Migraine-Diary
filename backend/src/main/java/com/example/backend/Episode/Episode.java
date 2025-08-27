@@ -21,10 +21,8 @@ public class Episode {
     @Column(name = "episode_date")
     private LocalDate episodeDate;
 
-    @ElementCollection
-    @CollectionTable(name = "episode_trigger_ids", joinColumns = @JoinColumn(name = "episode_id"))
-    @Column(name = "trigger_id")
-    private List<Integer> triggerIds;
+   @Column(name = "trigger_ids")
+    private Integer[] triggerIds;
 
     @Column(name = "menstrual_period")
     private boolean menstrualPeriod;
@@ -49,7 +47,7 @@ public class Episode {
     }
 
     // All-argument constructor
-    public Episode(int episodeId, String username, LocalDate episodeDate, List<Integer> triggerIds, boolean menstrualPeriod,
+    public Episode(int episodeId, String username, LocalDate episodeDate, Integer[] triggerIds, boolean menstrualPeriod,
                    int morningSeverity, int afternoonSeverity, int eveningSeverity, String notes) {
         this.episodeId = episodeId;
         this.username = username;
@@ -87,11 +85,11 @@ public class Episode {
         this.episodeDate = episodeDate;
     }
 
-    public List<Integer> getTriggerIds() {
+    public Integer[] getTriggerIds() {
         return triggerIds;
     }
 
-    public void setTriggerIds(List<Integer> triggerIds) {
+    public void setTriggerIds(Integer[] triggerIds) {
         this.triggerIds = triggerIds;
     }
 

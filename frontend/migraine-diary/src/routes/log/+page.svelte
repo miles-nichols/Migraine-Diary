@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { goto } from '$app/navigation';
 
   // --- 1. Type Definitions & Initial State ---
   interface Medicine {
@@ -148,8 +149,9 @@
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Server returned ${response.status}: ${errorText.substring(0, 100)}`);
+        const errorData = await response.json();
+        alert(errorData.error); 
+        return;
       }
 
       success = true;
@@ -182,7 +184,12 @@
 
 <main>
   <div class="container">
-    <h1>{title}</h1>
+    <div class="header-section">
+      <h1>{title}</h1>
+      <button class="back-home-btn" on:click={() => goto('/')}>
+        ← Back to Home
+      </button>
+    </div>
     
     {#if success}
       <div class="success-message">
@@ -482,7 +489,7 @@
   }
 
   /* Buttons */
-  .add-btn, .submit-btn {
+  .add-btn, .submit-btn, .back-home-btn {
     background: #60a5fa;
     color: white;
     border: none;

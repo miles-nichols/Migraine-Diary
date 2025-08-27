@@ -38,8 +38,10 @@ public class EpisodeService {
         
         if (user != null) {
             episode.setUsername(user.getUsername());
-            episode.setEpisodeDate(LocalDateTime.now().toLocalDate());
-            
+            if (episode.getEpisodeDate() == null) {
+                episode.setEpisodeDate(LocalDateTime.now().toLocalDate());
+            }
+
             if (episode.getMedicines() != null && !episode.getMedicines().isEmpty()) {
                 LocalDateTime now = LocalDateTime.now();
                 
@@ -49,8 +51,10 @@ public class EpisodeService {
                     medicine.setUsername(user.getUsername());
                     medicine.setCreatedAt(now);
                     medicine.setUpdatedAt(now);
-                    medicine.setMedicineLogDate(now);
-                    
+                    if (medicine.getMedicineLogDate() == null) {
+                        medicine.setMedicineLogDate(now);
+                    }
+
                     // CRITICAL: Ensure time_taken is never null or empty
                     if (medicine.getTimeTaken() == null || medicine.getTimeTaken().trim().isEmpty()) {
                         // Use current time with unique offset for each medicine
