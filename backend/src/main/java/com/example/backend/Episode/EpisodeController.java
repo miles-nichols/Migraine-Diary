@@ -1,9 +1,13 @@
 package com.example.backend.Episode;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 // import org.springframework.http.HttpStatus;
 // import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
 import java.util.*; 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +26,7 @@ public class EpisodeController {
     @Autowired
     private EpisodeService episodeService;
 
-    @GetMapping("/{username}")
+    @GetMapping("/user/{username}")
     public List<Episode> getAllEpisodes(@PathVariable String username) {
         return episodeService.getEpisodesPerUser(username);
     }
@@ -33,4 +37,40 @@ public class EpisodeController {
         logger.info("Episode received: {}", episode.toString()); 
         episodeService.saveEpisode(episode);
     }
+
+    @GetMapping("/user/{username}/month/{year}/{month}")
+    public ResponseEntity<List<Episode>> getEpisodesByMonth(
+            @PathVariable String username,
+            @PathVariable int year,
+            @PathVariable int month) {
+        List<Episode> episodes = episodeService.getUserEpisodesByMonth(username, year, month);
+        return ResponseEntity.ok(episodes);
+    }
+
+    @GetMapping("/user/{username}/date/{date}")
+    public ResponseEntity<Episode> getEpisodeByDate(
+            @PathVariable String username,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        Optional<Episode> episode = episodeService.getEpisodeByDate(username, date);
+        return episode.map(ResponseEntity::ok)
+                     .orElse(ResponseEntity.notFound().build());
+    }
+
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<Void> deleteEpisode(@PathVariable Integer id) {
+    //     episodeService.deleteEpisode(id);
+    //     return ResponseEntity.ok().build();
+    // }
+
+    // @PutMapping("/{id}")
+    // public ResponseEntity<Episode> updateEpisode(@PathVariable Integer id, @RequestBody Episode episode) {
+    //     episode.setEpisodeId(id);
+    //     try {
+    //         Episode updatedEpisode = episodeService.saveOrUpdateEpisode(episode);
+    //         return ResponseEntity.ok(updatedEpisode);
+    //     } catch (RuntimeException e) {
+    //         return ResponseEntity.badRequest().body(null);
+    //     }
+    // }
+
 }

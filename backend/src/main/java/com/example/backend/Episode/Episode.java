@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import java.util.*;
 
 import com.example.backend.MedicineDailyLog.MedicineDailyLog;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 
 @Entity
 @Table(name = "episodes")
@@ -12,16 +14,16 @@ public class Episode {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "episode_id")    
+    @Column(name = "episode_id")      
     private int episodeId;
 
-    @Column(name = "username")  
-    private String username;       
+    @Column(name = "username")    
+    private String username;        
 
     @Column(name = "episode_date")
     private LocalDate episodeDate;
 
-   @Column(name = "trigger_ids")
+    @Column(name = "trigger_ids")
     private Integer[] triggerIds;
 
     @Column(name = "menstrual_period")
@@ -39,16 +41,18 @@ public class Episode {
     @Column(name = "notes")
     private String notes;
 
+    // This is the correct field for the relationship.
     @OneToMany(mappedBy = "episode", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<MedicineDailyLog> medicines;
+    @JsonManagedReference
+    private List<MedicineDailyLog> medicineLogs = new ArrayList<>();
 
     // No-argument constructor REQUIRED by JPA
     public Episode() {
     }
 
-    // All-argument constructor
+    // All-argument constructor, now using the correct field name
     public Episode(int episodeId, String username, LocalDate episodeDate, Integer[] triggerIds, boolean menstrualPeriod,
-                   int morningSeverity, int afternoonSeverity, int eveningSeverity, String notes) {
+                     int morningSeverity, int afternoonSeverity, int eveningSeverity, String notes, List<MedicineDailyLog> medicineLogs) {
         this.episodeId = episodeId;
         this.username = username;
         this.episodeDate = episodeDate;
@@ -58,6 +62,7 @@ public class Episode {
         this.afternoonSeverity = afternoonSeverity;
         this.eveningSeverity = eveningSeverity;
         this.notes = notes;
+        this.medicineLogs = medicineLogs;
     }
 
     // Getter and Setter methods
@@ -133,11 +138,12 @@ public class Episode {
         this.notes = notes;
     }
 
-     public List<MedicineDailyLog> getMedicines() {
-        return medicines;
+    // Use a single getter/setter for the correct field
+    public List<MedicineDailyLog> getMedicineLogs() {
+        return medicineLogs;
     }
 
-    public void setMedicines(List<MedicineDailyLog> medicines) {
-        this.medicines = medicines;
+    public void setMedicineLogs(List<MedicineDailyLog> medicineLogs) {
+        this.medicineLogs = medicineLogs;
     }
 }

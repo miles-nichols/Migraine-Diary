@@ -1,4 +1,3 @@
-<!--Main-->
 <script>
     import { goto } from '$app/navigation';
     import { onMount } from 'svelte';
@@ -29,6 +28,11 @@
     function goToLogPage() {
         goto('/log');
     }
+
+    // New function to navigate to the reports page
+    function goToReports() {
+        goto('/reports');
+    }
     
     function goToLogin() {
         goto('/login');
@@ -53,7 +57,6 @@
 </script>
 
 <main>
-    <!-- User info in upper right corner -->
     {#if loggedIn && username}
         <div class="user-info-corner">
             <span class="welcome-text">{username}!</span>
@@ -65,7 +68,10 @@
     <div class="container">
         <h1>Welcome to Your Migraine Diary!</h1>
         {#if loggedIn}
-            <button class="log-btn" on:click={goToLogPage}>Log Your Day</button>
+            <div class="action-buttons">
+                <button class="log-btn" on:click={goToLogPage}>Log Your Day</button>
+                <button class="reports-btn" on:click={goToReports}>History</button>
+            </div>
         {:else}
             <button class="log-btn" on:click={goToLogin}>Log In / Sign Up</button>
             <div class="login-prompt">Please log in to access your diary.</div>
@@ -153,7 +159,14 @@
         margin-bottom: 2em;
     }
     
-    .log-btn {
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 1em;
+        margin-top: 1em;
+    }
+
+    .log-btn, .reports-btn {
         background: linear-gradient(90deg, #6366f1 0%, #3b82f6 100%);
         color: #fff;
         border: none;
@@ -163,14 +176,19 @@
         cursor: pointer;
         box-shadow: 0 2px 8px rgba(99,102,241,0.15);
         transition: background 0.2s, transform 0.2s;
-        margin-bottom: 1em;
     }
     
-    .log-btn:hover {
+    .log-btn:hover, .reports-btn:hover {
         background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
         transform: translateY(-2px) scale(1.04);
     }
     
+    /* reports-btn specific styling for a different look */
+    .reports-btn {
+        background: linear-gradient(90deg, #3b82f6 0%, #6366f1 100%);
+        box-shadow: 0 2px 8px rgba(59,130,246,0.15);
+    }
+
     .login-prompt {
         color: #ef4444;
         font-size: 1em;

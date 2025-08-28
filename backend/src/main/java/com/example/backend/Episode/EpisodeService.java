@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*; 
@@ -28,10 +29,6 @@ public class EpisodeService {
         this.medicineDailyLogRepository = medicineDailyLogRepository;
     }
 
-    public List<Episode> getEpisodesPerUser(String username) {
-        return episodeRepository.findByUsername(username);
-    }
-
         @Transactional
     public void saveEpisode(Episode episode) {
         User user = userRepository.findByUsername(episode.getUsername());
@@ -42,11 +39,11 @@ public class EpisodeService {
                 episode.setEpisodeDate(LocalDateTime.now().toLocalDate());
             }
 
-            if (episode.getMedicines() != null && !episode.getMedicines().isEmpty()) {
+            if (episode.getMedicineLogs() != null && !episode.getMedicineLogs().isEmpty()) {
                 LocalDateTime now = LocalDateTime.now();
                 
-                for (int i = 0; i < episode.getMedicines().size(); i++) {
-                    MedicineDailyLog medicine = episode.getMedicines().get(i);
+                for (int i = 0; i < episode.getMedicineLogs().size(); i++) {
+                    MedicineDailyLog medicine = episode.getMedicineLogs().get(i);
                     medicine.setEpisode(episode);
                     medicine.setUsername(user.getUsername());
                     medicine.setCreatedAt(now);
@@ -68,4 +65,17 @@ public class EpisodeService {
             throw new RuntimeException("User not found with username: " + episode.getUsername());
         }
     }
+
+    public List<Episode> getEpisodesPerUser(String username) {
+        return episodeRepository.findByUsername(username);
+    }
+    
+    public List<Episode> getUserEpisodesByMonth(String username, int year, int month) {
+        return episodeRepository.findByUsernameAndMonth(username, year, month);
+    }
+    
+    public Optional<Episode> getEpisodeByDate(String username, LocalDate date) {
+        return episodeRepository.findByUsernameAndEpisodeDate(username, date);
+    }
+
 }

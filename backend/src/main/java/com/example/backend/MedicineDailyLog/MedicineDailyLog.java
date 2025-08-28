@@ -3,7 +3,7 @@ package com.example.backend.MedicineDailyLog;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import com.example.backend.Episode.*;
-// import com.example.backend.Users.*;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "medicine_daily_log")
@@ -17,6 +17,7 @@ public class MedicineDailyLog {
     // Use @ManyToOne to map the episode_id foreign key
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "episode_id", nullable = false)
+    @JsonBackReference
     private Episode episode;
 
     @Column(name = "username")  
