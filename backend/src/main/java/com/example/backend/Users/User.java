@@ -20,13 +20,24 @@ public class User {
     private LocalDateTime createdAt;
     @Column(name = "last_login")
     private LocalDateTime lastLogin;
+    @Column(name = "is_admin")
+    private Boolean isAdmin;
 
     public User() { }
 
-    public User(String username, String password, String email) {
+    public User(String username, String password, String email, Boolean isAdmin) {
         this.username = username;
         this.password = password;
         this.email = email;
+        this.isAdmin = isAdmin;
+    }
+
+    public Boolean getIsAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(Boolean isAdmin) {
+        this.isAdmin = isAdmin;
     }
 
     public String getUsername() {

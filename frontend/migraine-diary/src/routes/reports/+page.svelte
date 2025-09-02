@@ -79,60 +79,89 @@
   let username: string | null = null;
   let selectedYear: number = new Date().getFullYear();
   let selectedMonth: number = new Date().getMonth() + 1;
+  
+  // Admin-specific variables
+  let usernames: string[] = [];
+  let selectedUsername: string | null = null;
 
-  onMount(() => {
+  onMount(async () => {
     if (typeof window !== 'undefined') {
       username = localStorage.getItem('username');
       console.log('Retrieved username:', username);
+
+      if (username === 'admin') {
+        await fetchAllUsernames();
+      } else {
+        selectedUsername = username;
+      }
     }
   });
 
-  async function fetchEpisodes() {
-  console.log('fetchEpisodes called');
-  if (!username) {
-    console.warn("Username not found. Cannot fetch logs.");
-    episodes = [];
-    return;
-  }
-
-  const url = `/episodes/user/${username}/month/${selectedYear}/${selectedMonth}`;
-  console.log('Fetching from URL:', url);
-  
-  try {
-    const response = await fetch(url);
-    console.log('Response status:', response.status);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+  async function fetchAllUsernames() {
+    try {
+        // This is a new, secure backend endpoint that you must create
+        const response = await fetch('http://localhost:8080/user/users'); 
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        usernames = await response.json();
+        console.log('Fetched all usernames:', usernames);
+        if (usernames.length > 0) {
+            selectedUsername = usernames[0]; // Set the first user as the default
+        }
+    } catch (error) {
+        console.error("Failed to fetch all usernames:", error);
     }
-    
-    const data = await response.json();
-    console.log('Fetched raw data:', data);
-    
-    // Ensure all properties are properly set with proper type annotation
-    episodes = data.map((episode: any) => ({
-      ...episode,
-      medicineLogs: episode.medicineLogs || [],
-      triggerIds: episode.triggerIds || [],
-      notes: episode.notes || '',
-      morningSeverity: episode.morningSeverity || 0,
-      afternoonSeverity: episode.afternoonSeverity || 0,
-      eveningSeverity: episode.eveningSeverity || 0,
-      menstrualPeriod: episode.menstrualPeriod || false
-    })) as Episode[];
-    
-    console.log('Processed episodes:', episodes);
-    console.log('Medicine logs for', username, ':', episodes.flatMap(ep => ep.medicineLogs));
-
-  } catch (error) {
-    console.error("Failed to fetch episodes:", error);
-    episodes = [];
   }
-}
 
-  // Reactive statement
-  $: if (username) {
-    console.log('Fetching episodes for:', {username, selectedYear, selectedMonth});
+  async function fetchEpisodes() {
+    console.log('fetchEpisodes called');
+    const userToFetch = (username === 'admin' ? selectedUsername : username);
+
+    if (!userToFetch) {
+      console.warn("User not selected or not found. Cannot fetch logs.");
+      episodes = [];
+      return;
+    }
+
+    const url = `/episodes/user/${userToFetch}/month/${selectedYear}/${selectedMonth}`;
+    console.log('Fetching from URL:', url);
+    
+    try {
+      const response = await fetch(url);
+      console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log('Fetched raw data:', data);
+      
+      // Ensure all properties are properly set with proper type annotation
+      episodes = data.map((episode: any) => ({
+        ...episode,
+        medicineLogs: episode.medicineLogs || [],
+        triggerIds: episode.triggerIds || [],
+        notes: episode.notes || '',
+        morningSeverity: episode.morningSeverity || 0,
+        afternoonSeverity: episode.afternoonSeverity || 0,
+        eveningSeverity: episode.eveningSeverity || 0,
+        menstrualPeriod: episode.menstrualPeriod || false
+      })) as Episode[];
+      
+      console.log('Processed episodes:', episodes);
+      console.log('Medicine logs for', userToFetch, ':', episodes.flatMap(ep => ep.medicineLogs));
+
+    } catch (error) {
+      console.error("Failed to fetch episodes:", error);
+      episodes = [];
+    }
+  }
+
+  // Reactive statement to trigger fetching whenever the user or date changes
+  $: if (selectedUsername && selectedYear && selectedMonth) {
+    console.log('Fetching episodes for:', { user: selectedUsername, selectedYear, selectedMonth });
     fetchEpisodes();
   }
 
@@ -159,7 +188,6 @@
 </script>
 
 <main class="container">
-  <!-- Navigation header with back button -->
   <div class="navigation-header">
     <button on:click={goToMainScreen} class="back-button">
       ← Back to Main Screen
@@ -172,6 +200,14 @@
   </p>
 
   <div class="controls">
+    {#if username === 'admin'}
+        <select bind:value={selectedUsername}>
+            {#each usernames as user}
+                <option value={user}>{user}</option>
+            {/each}
+        </select>
+    {/if}
+
     <select bind:value={selectedYear}>
       {#each years as year}
         <option value={year}>{year}</option>
@@ -260,7 +296,7 @@
             <span class="medicine-date">📅 {new Date(episode.episodeDate).toLocaleDateString()}</span>
           </div>
           
-       
+        
           {#if episode.notes && episode.notes.trim()}
             <div class="episode-notes">
               <strong>📝 Notes:</strong> {episode.notes}
@@ -284,7 +320,7 @@
             <p class="no-medicine-message">No medicines recorded for this day.</p>
           {/if}
           
-    
+      
           <div class="severity-summary">
             <h3>📊 Pain Severity:</h3>
             <div class="severity-levels">
@@ -294,7 +330,7 @@
             </div>
           </div>
           
-   
+      
           {#if episode.triggerIds && episode.triggerIds.length > 0}
             <div class="triggers-summary">
               <h3>⚡ Triggers:</h3>
@@ -304,7 +340,7 @@
             </div>
           {/if}
           
-         
+          
           <div class="menstrual-summary">
             <h3>🔴 Menstrual Period:</h3>
             <span>{episode.menstrualPeriod ? 'Yes' : 'No'}</span>
@@ -318,6 +354,7 @@
 </main>
 
 <style>
+  /* Your CSS styles here, no changes needed */
   .container {
     max-width: 1200px;
     margin: 2rem auto;

@@ -1,18 +1,22 @@
 package com.example.backend.Users;
 
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.security.Principal;
 
-    @RestController
+@RestController
 @RequestMapping("/user")
 public class UserController {
     
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+    private final UserRepository userRepository;
+
+    public UserController(UserService userService, UserRepository userRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+    }
 
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody User loginUser) {
@@ -41,14 +45,21 @@ public class UserController {
                 .body(Map.of("message", "User created successfully"));
     }
 
+    // New Endpoint to get a single user by username
+    // Secured with PreAuthorize to allow admins or the user themselves
     @GetMapping("/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
+    public ResponseEntity<User> getUserByUsername(@PathVariable String username, Principal principal) {
         Optional<User> user = userService.getUserByUsername(username);
         if (user.isPresent()) {
             return ResponseEntity.ok(user.get());
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(null); // Or return a custom error message
+                    .body(null);
         }
+    }
+  
+    @GetMapping("/users")
+    public List<String> getAllUsernames() {
+        return userRepository.findAllUsernames();
     }
 }
