@@ -60,13 +60,13 @@
   // Function to convert trigger IDs to names
   function getTriggerNames(triggerIds: number[]): string {
     if (!triggerIds || !triggerIds.length) return '';
-    
+    console.log('Mapping trigger IDs:', triggerIds);
     return triggerIds
       .map(id => {
         const trigger = triggerOptions.find(t => t.id === id);
         return trigger ? trigger.name : `Unknown (${id})`;
       })
-      .join(', ');
+      .join(', ');  
   }
 
   // Navigation function
@@ -122,7 +122,8 @@
     })) as Episode[];
     
     console.log('Processed episodes:', episodes);
-    
+    console.log('Medicine logs for', username, ':', episodes.flatMap(ep => ep.medicineLogs));
+
   } catch (error) {
     console.error("Failed to fetch episodes:", error);
     episodes = [];

@@ -132,13 +132,15 @@
         triggerIds: formData.triggers, 
         menstrualPeriod: formData.menstrualPeriod,
         notes: formData.notes,
-        medicines: formData.medicines.map(med => ({
-          medicineName: med.name,
-          dose: med.dose,
-          relief: med.relief,
-          timeTaken: med.time,
-          notes: med.notes
-        }))
+       medicineLogs: formData.medicines
+        .filter(med => med.name && med.name.trim() !== '') // <-- Filter out empty logs
+        .map(med => ({
+        medicineName: med.name,
+        dose: med.dose,
+        relief: med.relief,
+        timeTaken: med.time,
+        notes: med.notes
+    }))
       };
 
       const url = '/episodes/log';
